@@ -1,4 +1,2 @@
-gauge-userspace
-===============
-
-Daemon application supporting the CPU-Gauge device.
+===Baker===
+Baker for reflow oven.
