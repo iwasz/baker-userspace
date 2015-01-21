@@ -6,3 +6,4 @@ build/Makefile
 build/cmake_install.cmake
 build/cpugauge
 .settings
+build/baker

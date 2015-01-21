@@ -19,10 +19,6 @@ SET (CMAKE_VERBOSE_MAKEFILE off)
 #link_directories(${Boost_LIBRARY_DIRS})
 #message (${Boost_INCLUDE_DIRS})
 
-#find_package(GLUT REQUIRED)
-#include_directories(${GLUT_INCLUDE_DIRS})
-#link_directories(${GLUT_LIBRARY_DIRS})
-
 include (FindPkgConfig)
 #pkg_check_modules (GLIB REQUIRED "glib-2.0")
 #INCLUDE_DIRECTORIES (${GLIB_INCLUDE_DIRS})
@@ -31,10 +27,6 @@ include (FindPkgConfig)
 pkg_check_modules (LIBUSBX REQUIRED "libusb-1.0")
 INCLUDE_DIRECTORIES (${LIBUSBX_INCLUDE_DIRS})
 link_directories(${LIBUSBX_LIBRARY_DIRS})
-
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
-include (FindLibGtop)
-include_directories (${GLIBTOP_INCLUDE_DIR})
 
 AUX_SOURCE_DIRECTORY (../src SOURCES)
 INCLUDE_DIRECTORIES (../src)

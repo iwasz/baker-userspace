@@ -95,11 +95,11 @@ void UsbService::destroy ()
 
 /*--------------------------------------------------------------------------*/
 
-void UsbService::transmit (Buffer const &buf)
+void UsbService::transmit (Buffer const &)
 {
-        if (buf.size () != OUTPUT_DATA_SIZE) {
-                throw Exception ("UsbService::transmitConfiguration : wrong buffer size.");
-        }
+//        if (buf.size () != OUTPUT_DATA_SIZE) {
+//                throw Exception ("UsbService::transmitConfiguration : wrong buffer size.");
+//        }
 
 #if 0
         std::cerr  << "Transmiting : ";
@@ -109,13 +109,24 @@ void UsbService::transmit (Buffer const &buf)
         std::cerr  << std::endl;
 #endif
 
-        int transferred = 0;
-        int ret = libusb_interrupt_transfer (impl->device,
-                        OUTPUT_DATA_ENDPOINT,
-                        const_cast <uint8_t *> (&*buf.begin ()),
-                        buf.size (),
-                        &transferred,
-                        1000);
+//        int transferred = 0;
+        uint8_t buff[4];
+        int ret = libusb_control_transfer (impl->device,
+                        LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_IN, // LIBUSB_RECIPIENT_DEVICE
+                        GET_TEMP_REQUEST,
+                        0x0000,
+                        0x0000,
+                        buff,
+                        0x0004,
+                        0);
+
+        float temp = (((buff[0] << 8) | buff[1]) >> 2) / 4.0;
+        if (buff[0] & 0x80) {
+                temp  = -temp;
+        }
+        std::cerr << std::hex << (int)buff[0] << " " <<(int)buff[1] << " " << (int)buff[2] << " " <<(int)buff[4] << std::dec <<
+                        ", dec = "<< (int)buff[0] << ", " << (int)buff[1] << ", " << (int)buff[2] << ", " << (int)buff[3] <<
+                        "temp = " << temp << std::endl;
 
         if (ret >= 0) {
                 return;
