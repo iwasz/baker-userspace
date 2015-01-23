@@ -110,23 +110,30 @@ void UsbService::transmit (Buffer const &)
 #endif
 
 //        int transferred = 0;
-        uint8_t buff[4];
+        uint8_t buff[12];
         int ret = libusb_control_transfer (impl->device,
                         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_IN, // LIBUSB_RECIPIENT_DEVICE
                         GET_TEMP_REQUEST,
                         0x0000,
                         0x0000,
                         buff,
-                        0x0004,
+                        12,
                         0);
 
         float temp = (((buff[0] << 8) | buff[1]) >> 2) / 4.0;
         if (buff[0] & 0x80) {
                 temp  = -temp;
         }
+
+//        int16_t p = static_cast <uint16_t> (buff[4]) << 8 | buff[5];
+//        int16_t i = static_cast <uint16_t> (buff[6]) << 8 | buff[7];
+
+        int32_t p = *reinterpret_cast <int32_t *> (buff + 4);
+        int32_t i = *reinterpret_cast <int32_t *> (buff + 8);
+
         std::cerr << std::hex << (int)buff[0] << " " <<(int)buff[1] << " " << (int)buff[2] << " " <<(int)buff[4] << std::dec <<
                         ", dec = "<< (int)buff[0] << ", " << (int)buff[1] << ", " << (int)buff[2] << ", " << (int)buff[3] <<
-                        "temp = " << temp << std::endl;
+                        ", temp = " << temp << ", p = " << p << ", i = " << i << std::endl;
 
         if (ret >= 0) {
                 return;
