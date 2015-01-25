@@ -18,6 +18,7 @@ const unsigned int PRODUCT_ID = 0x41fe;
 const size_t OUTPUT_DATA_SIZE = 2;
 
 const uint8_t GET_TEMP_REQUEST = 0x01;
+const uint8_t SET_TEMP_REQUEST = 0x02;
 
 
 #endif /* CONSTANTS_H_ */

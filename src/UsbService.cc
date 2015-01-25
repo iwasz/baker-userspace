@@ -97,43 +97,66 @@ void UsbService::destroy ()
 
 void UsbService::transmit (Buffer const &)
 {
-//        if (buf.size () != OUTPUT_DATA_SIZE) {
-//                throw Exception ("UsbService::transmitConfiguration : wrong buffer size.");
-//        }
+        uint8_t buff[2];
+        int16_t setPoint = 50;
+//        buff[0] = setPoint >> 8;
+//        buff[1] = setPoint & 0x00ff;
+        buff[0] = 0xee;
+        buff[1] = 0xff;
 
-#if 0
-        std::cerr  << "Transmiting : ";
-        for (unsigned int i = 0; i < buf.size(); ++i) {
-                std::cerr << std::hex << (int)buf[i] << " ";
+        // Ustaw temperaturę:
+        int ret = libusb_control_transfer (impl->device,
+                        LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_OUT, // LIBUSB_RECIPIENT_DEVICE
+                        SET_TEMP_REQUEST,
+                        0x0000,
+                        0x0000,
+                        buff,
+                        2,
+                        0);
+
+
+        if (ret < 0) {
+                switch (ret) {
+                case LIBUSB_ERROR_TIMEOUT:
+                        throw Exception ("UsbService::transmitConfiguration : timeout reached.");
+
+                case LIBUSB_ERROR_PIPE:
+                        throw Exception ("UsbService::transmitConfiguration : the control request was not supported by the device.");
+
+                case LIBUSB_ERROR_NO_DEVICE:
+                        throw Exception ("UsbService::transmitConfiguration : the device has been disconnected.");
+
+                default:
+                        throw Exception ("UsbService::transmitConfiguration : undefined error : " + std::string (libusb_error_name(ret)) + ".");
+                }
+
+                exit (1);
         }
-        std::cerr  << std::endl;
-#endif
+
 
 //        int transferred = 0;
-        uint8_t buff[12];
-        int ret = libusb_control_transfer (impl->device,
+        ret = libusb_control_transfer (impl->device,
                         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_INTERFACE | LIBUSB_ENDPOINT_IN, // LIBUSB_RECIPIENT_DEVICE
                         GET_TEMP_REQUEST,
                         0x0000,
                         0x0000,
                         buff,
-                        12,
+                        2,
                         0);
 
-        float temp = (((buff[0] << 8) | buff[1]) >> 2) / 4.0;
-        if (buff[0] & 0x80) {
-                temp  = -temp;
-        }
+        int16_t temp = (buff[0] << 8) | buff[1];
 
-//        int16_t p = static_cast <uint16_t> (buff[4]) << 8 | buff[5];
-//        int16_t i = static_cast <uint16_t> (buff[6]) << 8 | buff[7];
+////        int16_t p = static_cast <uint16_t> (buff[4]) << 8 | buff[5];
+////        int16_t i = static_cast <uint16_t> (buff[6]) << 8 | buff[7];
+//
+//        int32_t p = *reinterpret_cast <int32_t *> (buff + 4);
+//        int32_t i = *reinterpret_cast <int32_t *> (buff + 8);
 
-        int32_t p = *reinterpret_cast <int32_t *> (buff + 4);
-        int32_t i = *reinterpret_cast <int32_t *> (buff + 8);
+//        std::cerr << std::hex << (int)buff[0] << " " <<(int)buff[1] << " " /*<< (int)buff[2] << " " <<(int)buff[4] << std::dec <<*/
+//                        ", dec = "<< (int)buff[0] << ", " << (int)buff[1] << /*", " << (int)buff[2] << ", " << (int)buff[3] <<*/
+//                        ", temp = " << std::dec << temp << /*", p = " << p << ", i = " << i <<*/ std::endl;
 
-        std::cerr << std::hex << (int)buff[0] << " " <<(int)buff[1] << " " << (int)buff[2] << " " <<(int)buff[4] << std::dec <<
-                        ", dec = "<< (int)buff[0] << ", " << (int)buff[1] << ", " << (int)buff[2] << ", " << (int)buff[3] <<
-                        ", temp = " << temp << ", p = " << p << ", i = " << i << std::endl;
+        std::cerr << "temp = " << std::dec << temp << "," << std::hex << temp << std::endl;
 
         if (ret >= 0) {
                 return;
