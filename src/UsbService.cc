@@ -99,10 +99,8 @@ void UsbService::transmit (Buffer const &)
 {
         uint8_t buff[2];
         int16_t setPoint = 50;
-//        buff[0] = setPoint >> 8;
-//        buff[1] = setPoint & 0x00ff;
-        buff[0] = 0xee;
-        buff[1] = 0xff;
+        buff[0] = setPoint >> 8;
+        buff[1] = setPoint & 0x00ff;
 
         // Ustaw temperaturę:
         int ret = libusb_control_transfer (impl->device,
@@ -112,7 +110,7 @@ void UsbService::transmit (Buffer const &)
                         0x0000,
                         buff,
                         2,
-                        0);
+                        500);
 
 
         if (ret < 0) {
